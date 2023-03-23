@@ -13,7 +13,7 @@ from utils import make_requests
 def main(args):
 
     base_url = 'https://finance.naver.com/research/'
-    list_url = base_url + "company_list.naver"
+    list_url = f"{base_url}company_list.naver"
 
     ## 1page에 있는 url들을 크롤링함
     response = requests.get(list_url)
@@ -21,10 +21,11 @@ def main(args):
     soup = BeautifulSoup(html, 'html.parser')
     report_raw_tags = soup.select('#contentarea_left > div > table > tr > td > a')
 
-    report_urls = []
-    for report_raw_tag in report_raw_tags:
-        if report_raw_tag.attrs['href'].startswith('company'):
-            report_urls.append(base_url + report_raw_tag.attrs['href'])
+    report_urls = [
+        base_url + report_raw_tag.attrs['href']
+        for report_raw_tag in report_raw_tags
+        if report_raw_tag.attrs['href'].startswith('company')
+    ]
     ###############################################################################
 
     # 각 url에서 그날의 레포트를 크롤링함
@@ -47,7 +48,7 @@ def main(args):
             tag_text = tag.text.replace('\t','').lstrip().rstrip()
             report += tag_text + '\n'
         report_day = re.search(r"\d{4}\.\d{2}\.\d{2}",report).group()
-        if not report_day == today:
+        if report_day != today:
             break
         reports.append(report)
 
